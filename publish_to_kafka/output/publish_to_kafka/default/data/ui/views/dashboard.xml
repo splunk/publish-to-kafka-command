@@ -27,21 +27,6 @@
   </row>
   <row>
     <panel>
-      <title>Events ingested by sourcetype</title>
-      <chart>
-        <search>
-          <query>index=_internal source=*publish_to_kafka* action=events_ingested
-| timechart avg(n_events) by sourcetype_ingested</query>
-          <earliest>$log_time.earliest$</earliest>
-          <latest>$log_time.latest$</latest>
-        </search>
-        <option name="charting.chart">line</option>
-        <option name="charting.drilldown">none</option>
-      </chart>
-    </panel>
-  </row>
-  <row>
-    <panel>
       <title>Errors in the add-on</title>
       <event>
         <search>

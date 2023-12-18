@@ -27,9 +27,9 @@ model = RestModel(fields, name=None)
 
 
 endpoint = SingleModel(
-    'publish_to_kafka_account',
+    'publish_to_kafka_environment',
     model,
-    config_name='account'
+    config_name='environment'
 )
 
 

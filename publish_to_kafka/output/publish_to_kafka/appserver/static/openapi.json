@@ -2,7 +2,7 @@
     "openapi": "3.0.0",
     "info": {
         "title": "publish_to_kafka",
-        "version": "0.0.0R372cd34",
+        "version": "0.0.0Re9af39c",
         "description": "Publish to Kafka for Splunk",
         "contact": {
             "name": ""
@@ -24,7 +24,7 @@
     ],
     "components": {
         "schemas": {
-            "account": {
+            "environment": {
                 "type": "object",
                 "properties": {
                     "name": {
@@ -35,7 +35,7 @@
                     }
                 }
             },
-            "account_without_name": {
+            "environment_without_name": {
                 "type": "object",
                 "properties": {
                     "bootstrap_server": {
@@ -72,59 +72,6 @@
                         ]
                     }
                 }
-            },
-            "publish_to_kafka": {
-                "type": "object",
-                "properties": {
-                    "name": {
-                        "type": "string"
-                    },
-                    "interval": {
-                        "type": "string"
-                    },
-                    "account": {
-                        "type": "string"
-                    },
-                    "disabled": {
-                        "type": "string",
-                        "enum": [
-                            "False",
-                            "True"
-                        ]
-                    }
-                }
-            },
-            "publish_to_kafka_without_name": {
-                "type": "object",
-                "properties": {
-                    "interval": {
-                        "type": "string"
-                    },
-                    "account": {
-                        "type": "string"
-                    },
-                    "disabled": {
-                        "type": "string",
-                        "enum": [
-                            "False",
-                            "True"
-                        ]
-                    }
-                }
-            },
-            "publish_to_kafka_without_disabled": {
-                "type": "object",
-                "properties": {
-                    "name": {
-                        "type": "string"
-                    },
-                    "interval": {
-                        "type": "string"
-                    },
-                    "account": {
-                        "type": "string"
-                    }
-                }
             }
         },
         "securitySchemes": {
@@ -135,11 +82,11 @@
         }
     },
     "paths": {
-        "/publish_to_kafka_account": {
+        "/publish_to_kafka_environment": {
             "get": {
                 "responses": {
                     "200": {
-                        "description": "Get list of items for account",
+                        "description": "Get list of items for environment",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -154,7 +101,7 @@
                                                         "type": "string"
                                                     },
                                                     "content": {
-                                                        "$ref": "#/components/schemas/account_without_name"
+                                                        "$ref": "#/components/schemas/environment_without_name"
                                                     }
                                                 }
                                             }
@@ -165,13 +112,13 @@
                         }
                     }
                 },
-                "description": "Get list of items for account",
+                "description": "Get list of items for environment",
                 "deprecated": false
             },
             "post": {
                 "responses": {
                     "200": {
-                        "description": "Create item in account",
+                        "description": "Create item in environment",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -186,7 +133,7 @@
                                                         "type": "string"
                                                     },
                                                     "content": {
-                                                        "$ref": "#/components/schemas/account_without_name"
+                                                        "$ref": "#/components/schemas/environment_without_name"
                                                     }
                                                 }
                                             }
@@ -197,12 +144,12 @@
                         }
                     }
                 },
-                "description": "Create item in account",
+                "description": "Create item in environment",
                 "requestBody": {
                     "content": {
                         "application/x-www-form-urlencoded": {
                             "schema": {
-                                "$ref": "#/components/schemas/account"
+                                "$ref": "#/components/schemas/environment"
                             }
                         }
                     },
@@ -226,11 +173,11 @@
                 }
             ]
         },
-        "/publish_to_kafka_account/{name}": {
+        "/publish_to_kafka_environment/{name}": {
             "get": {
                 "responses": {
                     "200": {
-                        "description": "Get account item details",
+                        "description": "Get environment item details",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -245,7 +192,7 @@
                                                         "type": "string"
                                                     },
                                                     "content": {
-                                                        "$ref": "#/components/schemas/account_without_name"
+                                                        "$ref": "#/components/schemas/environment_without_name"
                                                     }
                                                 }
                                             }
@@ -256,13 +203,13 @@
                         }
                     }
                 },
-                "description": "Get account item details",
+                "description": "Get environment item details",
                 "deprecated": false
             },
             "post": {
                 "responses": {
                     "200": {
-                        "description": "Update account item",
+                        "description": "Update environment item",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -277,7 +224,7 @@
                                                         "type": "string"
                                                     },
                                                     "content": {
-                                                        "$ref": "#/components/schemas/account_without_name"
+                                                        "$ref": "#/components/schemas/environment_without_name"
                                                     }
                                                 }
                                             }
@@ -288,12 +235,12 @@
                         }
                     }
                 },
-                "description": "Update account item",
+                "description": "Update environment item",
                 "requestBody": {
                     "content": {
                         "application/x-www-form-urlencoded": {
                             "schema": {
-                                "$ref": "#/components/schemas/account_without_name"
+                                "$ref": "#/components/schemas/environment_without_name"
                             }
                         }
                     },
@@ -304,7 +251,7 @@
             "delete": {
                 "responses": {
                     "200": {
-                        "description": "Delete account item",
+                        "description": "Delete environment item",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -319,7 +266,7 @@
                                                         "type": "string"
                                                     },
                                                     "content": {
-                                                        "$ref": "#/components/schemas/account_without_name"
+                                                        "$ref": "#/components/schemas/environment_without_name"
                                                     }
                                                 }
                                             }
@@ -330,7 +277,7 @@
                         }
                     }
                 },
-                "description": "Delete account item",
+                "description": "Delete environment item",
                 "deprecated": false
             },
             "parameters": [
@@ -434,229 +381,6 @@
                 "deprecated": false
             },
             "parameters": [
-                {
-                    "name": "output_mode",
-                    "in": "query",
-                    "required": true,
-                    "description": "Output mode",
-                    "schema": {
-                        "type": "string",
-                        "enum": [
-                            "json"
-                        ],
-                        "default": "json"
-                    }
-                }
-            ]
-        },
-        "/publish_to_kafka_publish_to_kafka": {
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "Get list of items for publish_to_kafka",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "entry": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "object",
-                                                "properties": {
-                                                    "name": {
-                                                        "type": "string"
-                                                    },
-                                                    "content": {
-                                                        "$ref": "#/components/schemas/publish_to_kafka_without_name"
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                },
-                "description": "Get list of items for publish_to_kafka",
-                "deprecated": false
-            },
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "Create item in publish_to_kafka",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "entry": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "object",
-                                                "properties": {
-                                                    "name": {
-                                                        "type": "string"
-                                                    },
-                                                    "content": {
-                                                        "$ref": "#/components/schemas/publish_to_kafka_without_name"
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                },
-                "description": "Create item in publish_to_kafka",
-                "requestBody": {
-                    "content": {
-                        "application/x-www-form-urlencoded": {
-                            "schema": {
-                                "$ref": "#/components/schemas/publish_to_kafka_without_disabled"
-                            }
-                        }
-                    },
-                    "required": false
-                },
-                "deprecated": false
-            },
-            "parameters": [
-                {
-                    "name": "output_mode",
-                    "in": "query",
-                    "required": true,
-                    "description": "Output mode",
-                    "schema": {
-                        "type": "string",
-                        "enum": [
-                            "json"
-                        ],
-                        "default": "json"
-                    }
-                }
-            ]
-        },
-        "/publish_to_kafka_publish_to_kafka/{name}": {
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "Get publish_to_kafka item details",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "entry": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "object",
-                                                "properties": {
-                                                    "name": {
-                                                        "type": "string"
-                                                    },
-                                                    "content": {
-                                                        "$ref": "#/components/schemas/publish_to_kafka_without_name"
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                },
-                "description": "Get publish_to_kafka item details",
-                "deprecated": false
-            },
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "Update publish_to_kafka item",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "entry": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "object",
-                                                "properties": {
-                                                    "name": {
-                                                        "type": "string"
-                                                    },
-                                                    "content": {
-                                                        "$ref": "#/components/schemas/publish_to_kafka_without_name"
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                },
-                "description": "Update publish_to_kafka item",
-                "requestBody": {
-                    "content": {
-                        "application/x-www-form-urlencoded": {
-                            "schema": {
-                                "$ref": "#/components/schemas/publish_to_kafka_without_name"
-                            }
-                        }
-                    },
-                    "required": false
-                },
-                "deprecated": false
-            },
-            "delete": {
-                "responses": {
-                    "200": {
-                        "description": "Delete publish_to_kafka item",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "entry": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "object",
-                                                "properties": {
-                                                    "name": {
-                                                        "type": "string"
-                                                    },
-                                                    "content": {
-                                                        "$ref": "#/components/schemas/publish_to_kafka_without_name"
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                },
-                "description": "Delete publish_to_kafka item",
-                "deprecated": false
-            },
-            "parameters": [
-                {
-                    "name": "name",
-                    "in": "path",
-                    "required": true,
-                    "description": "The name of the item to operate on",
-                    "schema": {
-                        "type": "string"
-                    }
-                },
                 {
                     "name": "output_mode",
                     "in": "query",
