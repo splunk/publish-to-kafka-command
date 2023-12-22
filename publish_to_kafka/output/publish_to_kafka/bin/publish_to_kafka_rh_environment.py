@@ -16,9 +16,30 @@ util.remove_http_proxy_env_vars()
 
 fields = [
     field.RestField(
-        'bootstrap_server',
+        'bootstrap_servers',
         required=True,
         encrypted=False,
+        default=None,
+        validator=None
+    ), 
+    field.RestField(
+        'security_protocol',
+        required=True,
+        encrypted=False,
+        default='PLAINTEXT',
+        validator=None
+    ), 
+    field.RestField(
+        'sasl_plain_username',
+        required=False,
+        encrypted=False,
+        default=None,
+        validator=None
+    ), 
+    field.RestField(
+        'sasl_plain_password',
+        required=False,
+        encrypted=True,
         default=None,
         validator=None
     )

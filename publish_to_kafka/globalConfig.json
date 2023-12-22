@@ -17,6 +17,10 @@
                             }
                         ]
                     },
+                    "hook": {
+                        "src": "config_env_hook",
+                        "type": "external"
+                    },
                     "entity": [
                         {
                             "type": "text",
@@ -40,10 +44,51 @@
                         },
                         {
                             "type": "text",
-                            "label": "Bootstrap Server",
-                            "field": "bootstrap_server",
-                            "help": "Bootstrap Server. e.g. localhost:9092",
+                            "label": "Bootstrap Servers",
+                            "field": "bootstrap_servers",
+                            "help": "List of Bootstrap Servers comma-separated. e.g. localhost:9092,localhost:9093",
                             "required": true
+                        },
+                        {
+                            "type": "singleSelect",
+                            "label": "Security Protocol",
+                            "options": {
+                                "disableSearch": true,
+                                "autoCompleteFields": [
+                                    {
+                                        "value": "PLAINTEXT",
+                                        "label": "PLAINTEXT (No Authentication)"
+                                    },
+                                    {
+                                        "value": "SASL_PLAINTEXT",
+                                        "label": "SASL_PLAINTEXT (No SSL)"
+                                    }
+                                ]
+                            },
+                            "defaultValue": "PLAINTEXT",
+                            "field": "security_protocol",
+                            "required": true
+                        },
+                        {
+                            "type": "text",
+                            "label": "SASL PLAIN Username",
+                            "field": "sasl_plain_username",
+                            "help": "Username for SASL PLAIN authentication.",
+                            "required": false,
+                            "options": {
+                                "enable": false
+                            }
+                        },
+                        {
+                            "type": "text",
+                            "label": "SASL PLAIN Password",
+                            "field": "sasl_plain_password",
+                            "help": "Password for SASL PLAIN authentication.",
+                            "encrypted": true,
+                            "required": false,
+                            "options": {
+                                "enable": false
+                            }
                         }
                     ],
                     "title": "Environment"
@@ -113,7 +158,7 @@
     "meta": {
         "name": "publish_to_kafka",
         "restRoot": "publish_to_kafka",
-        "version": "0.0.0Re9af39c",
+        "version": "0.0.0R46c2014",
         "displayName": "Publish to Kafka for Splunk",
         "schemaVersion": "0.0.3"
     }

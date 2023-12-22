@@ -2,7 +2,7 @@
     "openapi": "3.0.0",
     "info": {
         "title": "publish_to_kafka",
-        "version": "0.0.0Re9af39c",
+        "version": "0.0.0R46c2014",
         "description": "Publish to Kafka for Splunk",
         "contact": {
             "name": ""
@@ -30,16 +30,44 @@
                     "name": {
                         "type": "string"
                     },
-                    "bootstrap_server": {
+                    "bootstrap_servers": {
                         "type": "string"
+                    },
+                    "security_protocol": {
+                        "type": "string",
+                        "enum": [
+                            "PLAINTEXT",
+                            "SASL_PLAINTEXT"
+                        ]
+                    },
+                    "sasl_plain_username": {
+                        "type": "string"
+                    },
+                    "sasl_plain_password": {
+                        "type": "string",
+                        "format": "password"
                     }
                 }
             },
             "environment_without_name": {
                 "type": "object",
                 "properties": {
-                    "bootstrap_server": {
+                    "bootstrap_servers": {
                         "type": "string"
+                    },
+                    "security_protocol": {
+                        "type": "string",
+                        "enum": [
+                            "PLAINTEXT",
+                            "SASL_PLAINTEXT"
+                        ]
+                    },
+                    "sasl_plain_username": {
+                        "type": "string"
+                    },
+                    "sasl_plain_password": {
+                        "type": "string",
+                        "format": "password"
                     }
                 }
             },
