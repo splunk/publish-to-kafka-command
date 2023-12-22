@@ -1,4 +1,3 @@
-// Derived from: https://splunk.github.io/addonfactory-ucc-generator/custom_ui_extensions/custom_hook/
 class ConfigEnvHook {
     /**
      * Form hook

@@ -1,0 +1,14 @@
+[passwords/credential%3A__REST_CREDENTIAL__%23publish_to_kafka%23configs%2Fconf-publish_to_kafka_environment%3Adev%60%60splunk_cred_sep%60%601%3A]
+owner = admin
+version = 9.0.4.1
+modtime = 1703224302.647175000
+
+[passwords/credential%3A__REST_CREDENTIAL__%23publish_to_kafka%23configs%2Fconf-publish_to_kafka_environment%3Adev%60%60splunk_cred_sep%60%602%3A]
+owner = admin
+version = 9.0.4.1
+modtime = 1703224302.676296000
+
+[publish_to_kafka_environment/dev]
+owner = admin
+version = 9.0.4.1
+modtime = 1703224302.696894000

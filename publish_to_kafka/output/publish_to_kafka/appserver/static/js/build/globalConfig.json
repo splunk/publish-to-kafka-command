@@ -1,0 +1,165 @@
+{
+    "pages": {
+        "configuration": {
+            "tabs": [
+                {
+                    "name": "environment",
+                    "table": {
+                        "actions": [
+                            "edit",
+                            "delete",
+                            "clone"
+                        ],
+                        "header": [
+                            {
+                                "label": "Name",
+                                "field": "name"
+                            }
+                        ]
+                    },
+                    "hook": {
+                        "src": "config_env_hook",
+                        "type": "external"
+                    },
+                    "entity": [
+                        {
+                            "type": "text",
+                            "label": "Name",
+                            "validators": [
+                                {
+                                    "type": "regex",
+                                    "errorMsg": "Account Name must begin with a letter and consist exclusively of alphanumeric characters and underscores.",
+                                    "pattern": "^[a-zA-Z]\\w*$"
+                                },
+                                {
+                                    "type": "string",
+                                    "errorMsg": "Length of input name should be between 1 and 100",
+                                    "minLength": 1,
+                                    "maxLength": 100
+                                }
+                            ],
+                            "field": "name",
+                            "help": "A unique name for the environment.",
+                            "required": true
+                        },
+                        {
+                            "type": "text",
+                            "label": "Bootstrap Servers",
+                            "field": "bootstrap_servers",
+                            "help": "List of Bootstrap Servers comma-separated. e.g. localhost:9092,localhost:9093",
+                            "required": true
+                        },
+                        {
+                            "type": "singleSelect",
+                            "label": "Security Protocol",
+                            "options": {
+                                "disableSearch": true,
+                                "autoCompleteFields": [
+                                    {
+                                        "value": "PLAINTEXT",
+                                        "label": "PLAINTEXT (No Authentication)"
+                                    },
+                                    {
+                                        "value": "SASL_PLAINTEXT",
+                                        "label": "SASL_PLAINTEXT (No SSL)"
+                                    }
+                                ]
+                            },
+                            "defaultValue": "PLAINTEXT",
+                            "field": "security_protocol",
+                            "required": true
+                        },
+                        {
+                            "type": "text",
+                            "label": "SASL PLAIN Username",
+                            "field": "sasl_plain_username",
+                            "help": "Username for SASL PLAIN authentication.",
+                            "required": false,
+                            "options": {
+                                "enable": false
+                            }
+                        },
+                        {
+                            "type": "text",
+                            "label": "SASL PLAIN Password",
+                            "field": "sasl_plain_password",
+                            "help": "Password for SASL PLAIN authentication.",
+                            "encrypted": true,
+                            "required": false,
+                            "options": {
+                                "enable": false
+                            }
+                        }
+                    ],
+                    "title": "Environment"
+                },
+                {
+                    "name": "logging",
+                    "entity": [
+                        {
+                            "type": "singleSelect",
+                            "label": "Log level",
+                            "options": {
+                                "disableSearch": true,
+                                "autoCompleteFields": [
+                                    {
+                                        "value": "DEBUG",
+                                        "label": "DEBUG"
+                                    },
+                                    {
+                                        "value": "INFO",
+                                        "label": "INFO"
+                                    },
+                                    {
+                                        "value": "WARN",
+                                        "label": "WARN"
+                                    },
+                                    {
+                                        "value": "ERROR",
+                                        "label": "ERROR"
+                                    },
+                                    {
+                                        "value": "CRITICAL",
+                                        "label": "CRITICAL"
+                                    }
+                                ]
+                            },
+                            "defaultValue": "INFO",
+                            "field": "loglevel"
+                        }
+                    ],
+                    "title": "Logging"
+                }
+            ],
+            "title": "Configuration",
+            "description": "Set up your add-on"
+        },
+        "inputs": {
+            "services": [],
+            "title": "Inputs",
+            "description": "Manage your data inputs",
+            "table": {
+                "actions": [],
+                "header": [],
+                "moreInfo": []
+            }
+        },
+        "dashboard": {
+            "panels": [
+                {
+                    "name": "addon_version"
+                },
+                {
+                    "name": "errors_in_the_addon"
+                }
+            ]
+        }
+    },
+    "meta": {
+        "name": "publish_to_kafka",
+        "restRoot": "publish_to_kafka",
+        "version": "0.0.0R46c2014",
+        "displayName": "Publish to Kafka for Splunk",
+        "schemaVersion": "0.0.3"
+    }
+}
