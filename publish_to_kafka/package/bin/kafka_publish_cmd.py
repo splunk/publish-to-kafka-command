@@ -3,12 +3,14 @@
 import os
 import sys
 import logging
+import json
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "lib"))
 from splunklib.searchcommands import \
     dispatch, StreamingCommand, Configuration, Option, validators
 
 from solnlib import conf_manager
+from kafka import KafkaProducer
 
 ADDON_NAME = "publish_to_kafka"
 
@@ -20,6 +22,18 @@ handler.setFormatter(formatter)
 logging.root.addHandler(handler)
 
 logger = logging.getLogger(__name__)
+
+
+def kafka_publish(bootstrap_servers, topic, message,
+                  security_protocol,
+                  sasl_plain_username=None,
+                  sasl_plain_password=None):
+    producer = KafkaProducer(bootstrap_servers=bootstrap_servers,
+                             security_protocol=security_protocol,
+                             sasl_mechanism="PLAIN",
+                             sasl_plain_username=sasl_plain_username,
+                             sasl_plain_password=sasl_plain_password)
+    producer.send(topic, message.encode('utf-8'))
 
 
 @Configuration()
@@ -38,6 +52,18 @@ class KafkaPublishCommand(StreamingCommand):
         doc='''
             **Description:** Stanza name of the Kafka environment''',
         require=False)
+    topic_name = Option(
+        doc='''
+            **Description:** Kafka topic name''',
+        require=True)
+
+    @staticmethod
+    def repl(records):
+        for record in records:
+            if "cmd" in record:
+                output = eval(record["cmd"])
+                record["output"] = str(output)
+            yield record
 
     def stream(self, records):
         self.logger.info(f"env name: {self.env_name}")
@@ -50,11 +76,17 @@ class KafkaPublishCommand(StreamingCommand):
         self.logger.info(f"bootstrap_servers={bootstrap_servers}")
         self.logger.info(f"security_protocol={security_protocol}")
         self.logger.info(f"sasl_plain_username={sasl_plain_username}")
+
+        producer = KafkaProducer(bootstrap_servers=bootstrap_servers,
+                                 security_protocol=security_protocol,
+                                 sasl_mechanism="PLAIN",
+                                 sasl_plain_username=sasl_plain_username,
+                                 sasl_plain_password=sasl_plain_password)
+
         for record in records:
-            if "cmd" in record:
-                output = eval(record["cmd"])
-                record["output"] = str(output)
+            producer.send(self.topic_name, json.dumps(record).encode('utf-8'))
             yield record
+        producer.flush(timeout=30)
 
 
 dispatch(KafkaPublishCommand, sys.argv, sys.stdin, sys.stdout, __name__)
