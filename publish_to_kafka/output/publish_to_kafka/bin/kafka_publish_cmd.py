@@ -24,18 +24,6 @@ logging.root.addHandler(handler)
 logger = logging.getLogger(__name__)
 
 
-def kafka_publish(bootstrap_servers, topic, message,
-                  security_protocol,
-                  sasl_plain_username=None,
-                  sasl_plain_password=None):
-    producer = KafkaProducer(bootstrap_servers=bootstrap_servers,
-                             security_protocol=security_protocol,
-                             sasl_mechanism="PLAIN",
-                             sasl_plain_username=sasl_plain_username,
-                             sasl_plain_password=sasl_plain_password)
-    producer.send(topic, message.encode('utf-8'))
-
-
 @Configuration()
 class KafkaPublishCommand(StreamingCommand):
 
@@ -49,21 +37,32 @@ class KafkaPublishCommand(StreamingCommand):
         return account_conf_file.get(env_name)
 
     env_name = Option(
-        doc='''
-            **Description:** Stanza name of the Kafka environment''',
+        doc='''**Description:** Stanza name of the Kafka environment''',
         require=False)
     topic_name = Option(
-        doc='''
-            **Description:** Kafka topic name''',
+        doc='''**Description:** Kafka topic name''',
         require=True)
 
-    @staticmethod
-    def repl(records):
-        for record in records:
-            if "cmd" in record:
-                output = eval(record["cmd"])
-                record["output"] = str(output)
-            yield record
+    linger_ms = Option(
+        doc='Linger in milliseconds before sending messages to Kafka',
+        require=False,
+        default=0,
+        validate=validators.Integer()
+    )
+    batch_size = Option(
+        doc="""A small batch size will make batching less common and may reduce throughput 
+        (a batch size of zero will disable batching entirely).""",
+        require=False,
+        default=16384,
+        validate=validators.Integer()
+    )
+    timeout = Option(
+        name='timeout',
+        doc='Timeout for sending a message to Kafka (in seconds)',
+        require=False,
+        default=None,
+        validate=validators.Integer()
+    )
 
     def stream(self, records):
         self.logger.info(f"env name: {self.env_name}")
@@ -81,12 +80,15 @@ class KafkaPublishCommand(StreamingCommand):
                                  security_protocol=security_protocol,
                                  sasl_mechanism="PLAIN",
                                  sasl_plain_username=sasl_plain_username,
-                                 sasl_plain_password=sasl_plain_password)
+                                 sasl_plain_password=sasl_plain_password,
+                                 value_serializer=lambda x: json.dumps(x).encode('utf-8'),
+                                 batch_size=self.batch_size,
+                                 linger_ms=self.linger_ms)
 
         for record in records:
-            producer.send(self.topic_name, json.dumps(record).encode('utf-8'))
+            producer.send(self.topic_name, record)
             yield record
-        producer.flush(timeout=30)
+        producer.flush(timeout=self.timeout)
 
 
 dispatch(KafkaPublishCommand, sys.argv, sys.stdin, sys.stdout, __name__)
