@@ -24,6 +24,11 @@ class KafkaPublishCommand(StreamingCommand):
         default=None,
         require=False)
 
+    error_index_name = Option(
+        doc='Index to write failed events to. If not specified, failed events will not be written to an index.',
+        default=None,
+        require=False)
+
     bootstrap_servers = Option(
         doc='Comma-separated list of bootstrap servers. Overrides environment config if specified.',
         require=False
@@ -94,7 +99,7 @@ class KafkaPublishCommand(StreamingCommand):
         elif not optional:
             raise ValueError(f"Missing required argument: {key}")
 
-    def stream(self, records):
+    def get_producer_instance(self) -> KafkaProducer:
         env = {}
         if self.env_name is not None:
             env = self.get_env_config_by_name(self.env_name)
@@ -114,12 +119,47 @@ class KafkaPublishCommand(StreamingCommand):
                 continue
             else:
                 self.logger.info(f"KafkaProducer args {k}={v}")
-        producer = KafkaProducer(**producer_args)
+
+        return KafkaProducer(**producer_args)
+
+    def write_to_index(self, records):
+        if self.error_index_name is None:
+            return
+        # Write all records to temp file
+        import tempfile
+        with tempfile.NamedTemporaryFile() as tmp:
+            for record in records:
+                tmp.write(json.dumps(record).encode('utf-8'))
+                tmp.write(b'\n')
+            tmp.flush()
+            # Upload temp file to Splunk
+            self.service.indexes[self.error_index_name].upload(tmp.name)
+
+    def stream(self, records):
+        if self.error_index_name is not None and self.error_index_name not in self.service.indexes:
+            raise ValueError(f"Index {self.error_index_name} does not exist")
+
+        producer = self.get_producer_instance()
+        failed_records = []
+
+        def make_error_handler(failed_record):
+            def handler(error):
+                self.logger.error(f"Error sending record to Kafka: {error}")
+                self.logger.error(f"Record: {failed_record}")
+                failed_records.append(failed_record)
+
+            return handler
 
         for record in records:
-            producer.send(self.topic_name, record)
+            producer.send(self.topic_name, record).add_errback(make_error_handler(record))
             yield record
+
         producer.flush(timeout=self.timeout)
+
+        if failed_records and self.error_index_name is not None:
+            self.write_error(f"Failed to send {len(failed_records)} records to Kafka")
+            # Write failed records to an error index via oneshot upload to reduce network requests
+            self.write_to_index(failed_records)
 
 
 dispatch(KafkaPublishCommand, sys.argv, sys.stdin, sys.stdout, __name__)
