@@ -151,6 +151,9 @@ class KafkaPublishCommand(StreamingCommand):
             return handler
 
         for record in records:
+            # TODO: catch no brokers available error
+            # Give more info to user: That creds might be wrong, or bootstrap servers unreachable
+            # Use self.write_error
             producer.send(self.topic_name, record).add_errback(make_error_handler(record))
             yield record
 

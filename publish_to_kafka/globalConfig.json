@@ -158,7 +158,7 @@
     "meta": {
         "name": "publish_to_kafka",
         "restRoot": "publish_to_kafka",
-        "version": "0.0.0Rd9afa18",
+        "version": "0.0.0R9cd4a62",
         "displayName": "Publish to Kafka for Splunk",
         "schemaVersion": "0.0.3"
     }
