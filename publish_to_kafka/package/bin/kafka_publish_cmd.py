@@ -4,6 +4,7 @@ import json
 import logging
 import os
 import sys
+import time
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "lib"))
 from splunklib.searchcommands import \
@@ -113,7 +114,7 @@ class KafkaPublishCommand(StreamingCommand):
             "sasl_mechanism": "PLAIN",
             "value_serializer": lambda x: json.dumps(x).encode('utf-8'),
             "batch_size": self.batch_size,
-            "linger_ms": self.linger_ms
+            "linger_ms": self.linger_ms,
         }
         for k, v in producer_args.items():
             if "password" in k:
@@ -124,6 +125,8 @@ class KafkaPublishCommand(StreamingCommand):
         return KafkaProducer(**producer_args)
 
     def write_to_index(self, records):
+        # Write failed records to an error index via oneshot upload to reduce network requests
+
         if self.error_index_name is None:
             return
         # Write all records to temp file
@@ -155,15 +158,31 @@ class KafkaPublishCommand(StreamingCommand):
 
             return handler
 
+        timestamp_send_start = time.time()
+        last_log_time = timestamp_send_start
+        records_successfully_sent = 0
+
+        def success_handler(record_metadata):
+            nonlocal records_successfully_sent
+            nonlocal last_log_time
+            records_successfully_sent += 1
+            time_elapsed = time.time() - timestamp_send_start
+            time_since_last_log = time.time() - last_log_time
+            records_per_second = records_successfully_sent / time_elapsed
+            if time_since_last_log >= 5:
+                # Log every 5 seconds
+                self.logger.info(f"Progress: metadata={record_metadata}, {records_successfully_sent} records sent in {time_elapsed} seconds.")
+                self.logger.info(f"Overall performance: {records_per_second:.2f} records/second")
+                last_log_time = time.time()
+
         for record in records:
-            producer.send(self.topic_name, record).add_errback(make_error_handler(record))
+            producer.send(self.topic_name, record).add_errback(make_error_handler(record)).add_callback(success_handler)
             yield record
 
         producer.flush(timeout=self.timeout)
 
         if failed_records and self.error_index_name is not None:
             self.write_error(f"Failed to send {len(failed_records)} records to Kafka")
-            # Write failed records to an error index via oneshot upload to reduce network requests
             self.write_to_index(failed_records)
 
 
