@@ -11,6 +11,7 @@ from splunklib.searchcommands import \
 
 from solnlib import conf_manager
 from kafka import KafkaProducer
+from kafka.errors import NoBrokersAvailable
 
 ADDON_NAME = "publish_to_kafka"
 
@@ -139,7 +140,11 @@ class KafkaPublishCommand(StreamingCommand):
         if self.error_index_name is not None and self.error_index_name not in self.service.indexes:
             raise ValueError(f"Index {self.error_index_name} does not exist")
 
-        producer = self.get_producer_instance()
+        try:
+            producer = self.get_producer_instance()
+        except NoBrokersAvailable as e:
+            raise RuntimeError("Bootstrap servers may be unreachable or credentials may be incorrect.") from e
+
         failed_records = []
 
         def make_error_handler(failed_record):
@@ -151,9 +156,6 @@ class KafkaPublishCommand(StreamingCommand):
             return handler
 
         for record in records:
-            # TODO: catch no brokers available error
-            # Give more info to user: That creds might be wrong, or bootstrap servers unreachable
-            # Use self.write_error
             producer.send(self.topic_name, record).add_errback(make_error_handler(record))
             yield record
 

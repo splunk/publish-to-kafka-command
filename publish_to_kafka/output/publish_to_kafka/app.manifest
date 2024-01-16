@@ -21,7 +21,7 @@
         "id": {
             "group": null,
             "name": "publish_to_kafka",
-            "version": "0.0.0Rde7000d"
+            "version": "0.0.0R17c946c"
         },
         "license": {
             "name": null,
