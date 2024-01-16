@@ -78,3 +78,7 @@ From within directory `/confluent`:
 
 `docker compose up --build`
 
+## Further Reading
+Streaming command can run on both SH and indexers:
+- https://docs.splunk.com/Documentation/Splunk/9.1.2/Search/Typesofcommands#Distributable_streaming
+- Splunklib doc: https://github.com/splunk/splunk-sdk-python/blob/master/splunklib/searchcommands/streaming_command.py#L33-L35

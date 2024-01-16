@@ -2,7 +2,7 @@
     "openapi": "3.0.0",
     "info": {
         "title": "publish_to_kafka",
-        "version": "0.0.0R9cd4a62",
+        "version": "0.0.0Rde7000d",
         "description": "Publish to Kafka for Splunk",
         "contact": {
             "name": ""
