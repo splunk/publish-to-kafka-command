@@ -27,7 +27,7 @@ logging.root.setLevel(logging.INFO)
 def setup_logging():
     # Log to index=_internal, source=LOGGING_FILE_NAME
     # https://dev.splunk.com/enterprise/docs/developapps/addsupport/logging/loggingsplunkextensions/
-    logger = logging.getLogger() # root logger
+    logger = logging.getLogger()  # root logger
     SPLUNK_HOME = os.environ['SPLUNK_HOME']
 
     LOGGING_DEFAULT_CONFIG_FILE = os.path.join(SPLUNK_HOME, 'etc', 'log.cfg')
@@ -42,8 +42,6 @@ def setup_logging():
     logger.addHandler(splunk_log_handler)
     splunk.setupSplunkLogger(logger, LOGGING_DEFAULT_CONFIG_FILE, LOGGING_LOCAL_CONFIG_FILE, LOGGING_STANZA_NAME)
     return logger
-
-logger = setup_logging()
 
 
 @Configuration()
@@ -167,7 +165,6 @@ class KafkaPublishCommand(StreamingCommand):
             self.service.indexes[self.error_index_name].upload(tmp.name)
 
     def stream(self, records):
-        logger.info(f"Started KafkaPublishCommand stream()")
         if self.error_index_name is not None and self.error_index_name not in self.service.indexes:
             raise ValueError(f"Index {self.error_index_name} does not exist")
 
