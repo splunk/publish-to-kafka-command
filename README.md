@@ -82,3 +82,5 @@ From within directory `/confluent`:
 Streaming command can run on both SH and indexers:
 - https://docs.splunk.com/Documentation/Splunk/9.1.2/Search/Typesofcommands#Distributable_streaming
 - Splunklib doc: https://github.com/splunk/splunk-sdk-python/blob/master/splunklib/searchcommands/streaming_command.py#L33-L35
+- Performance tuning: https://developer.confluent.io/tutorials/optimize-producer-throughput/confluent.html
+  - Compression would help
