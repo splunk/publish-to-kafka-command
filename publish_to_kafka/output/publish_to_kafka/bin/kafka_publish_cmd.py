@@ -2,6 +2,7 @@
 
 import json
 import logging
+import logging.handlers
 import os
 import sys
 import time
@@ -11,12 +12,37 @@ from splunklib.searchcommands import \
     dispatch, StreamingCommand, Configuration, Option, validators
 
 from solnlib import conf_manager
+import splunk
+
 from kafka import KafkaProducer
 from kafka.errors import NoBrokersAvailable
 
 ADDON_NAME = "publish_to_kafka"
 
-logging.root.setLevel(logging.DEBUG)
+# WARNING: setting root log level to DEBUG severely slows overall performance
+logging.root.setLevel(logging.INFO)
+
+
+def setup_logging():
+    # Log to index=_internal, source=LOGGING_FILE_NAME
+    # https://dev.splunk.com/enterprise/docs/developapps/addsupport/logging/loggingsplunkextensions/
+    logger = logging.getLogger() # root logger
+    SPLUNK_HOME = os.environ['SPLUNK_HOME']
+
+    LOGGING_DEFAULT_CONFIG_FILE = os.path.join(SPLUNK_HOME, 'etc', 'log.cfg')
+    LOGGING_LOCAL_CONFIG_FILE = os.path.join(SPLUNK_HOME, 'etc', 'log-local.cfg')
+    LOGGING_STANZA_NAME = 'python'
+    LOGGING_FILE_NAME = "kafka_publish_command.log"
+    BASE_LOG_PATH = os.path.join('var', 'log', 'splunk')
+    LOGGING_FORMAT = "%(asctime)s %(levelname)-s\t%(module)s:%(lineno)d - %(message)s"
+    splunk_log_handler = logging.handlers.RotatingFileHandler(
+        os.path.join(SPLUNK_HOME, BASE_LOG_PATH, LOGGING_FILE_NAME), mode='a')
+    splunk_log_handler.setFormatter(logging.Formatter(LOGGING_FORMAT))
+    logger.addHandler(splunk_log_handler)
+    splunk.setupSplunkLogger(logger, LOGGING_DEFAULT_CONFIG_FILE, LOGGING_LOCAL_CONFIG_FILE, LOGGING_STANZA_NAME)
+    return logger
+
+logger = setup_logging()
 
 
 @Configuration()
@@ -140,6 +166,7 @@ class KafkaPublishCommand(StreamingCommand):
             self.service.indexes[self.error_index_name].upload(tmp.name)
 
     def stream(self, records):
+        logger.info(f"Started KafkaPublishCommand stream()")
         if self.error_index_name is not None and self.error_index_name not in self.service.indexes:
             raise ValueError(f"Index {self.error_index_name} does not exist")
 
@@ -169,10 +196,11 @@ class KafkaPublishCommand(StreamingCommand):
             time_elapsed = time.time() - timestamp_send_start
             time_since_last_log = time.time() - last_log_time
             records_per_second = records_successfully_sent / time_elapsed
-            if time_since_last_log >= 5:
+            if time_since_last_log >= 2:
                 # Log every 5 seconds
-                self.logger.info(f"Progress: metadata={record_metadata}, {records_successfully_sent} records sent in {time_elapsed} seconds.")
-                self.logger.info(f"Overall performance: {records_per_second:.2f} records/second")
+                self.logger.info(
+                    f"Progress: metadata={record_metadata}, {records_successfully_sent} records sent in {time_elapsed:.3f} seconds.")
+                self.logger.info(f"Current performance: {records_per_second:.3f} records/second")
                 last_log_time = time.time()
 
         for record in records:
