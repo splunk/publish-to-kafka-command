@@ -11,6 +11,7 @@ Uses UCC library (https://splunk.github.io/addonfactory-ucc-generator/)
 ### Backend (Search command)
 - splunklib: https://splunk-python-sdk.readthedocs.io/en/latest/index.html
 - solnlib: https://splunk.github.io/addonfactory-solutions-library-python/conf_manager/
+- kafka-python: https://kafka-python.readthedocs.io/en/master/usage.html
 
 ### Building and local setup
 From within directory `/publish_to_kafka`:
@@ -55,6 +56,7 @@ Alternatively, if you don't want to configure an environment, you can specify th
 | eval hello="world"
 | kafkapublish topic_name=test bootstrap_servers="localhost:9092" security_protocol=SASL_PLAINTEXT sasl_plain_username=user sasl_plain_password=pass
 ```
+For full list of command args see the code in `publish_to_kafka/package/bin/kafka_publish_cmd.py`
 ### Code
 Noteworthy files include:
 - `publish_to_kafka/package/bin/publish_to_kafka.py`: The search command
