@@ -18,6 +18,7 @@ from kafka import KafkaProducer
 from kafka.errors import NoBrokersAvailable
 
 ADDON_NAME = "publish_to_kafka"
+LOG_PROGRESS_INTERVAL_SECONDS = 2
 
 # WARNING: setting root log level to DEBUG severely slows overall performance
 logging.root.setLevel(logging.INFO)
@@ -26,7 +27,7 @@ logging.root.setLevel(logging.INFO)
 def setup_logging():
     # Log to index=_internal, source=LOGGING_FILE_NAME
     # https://dev.splunk.com/enterprise/docs/developapps/addsupport/logging/loggingsplunkextensions/
-    logger = logging.getLogger() # root logger
+    logger = logging.getLogger()  # root logger
     SPLUNK_HOME = os.environ['SPLUNK_HOME']
 
     LOGGING_DEFAULT_CONFIG_FILE = os.path.join(SPLUNK_HOME, 'etc', 'log.cfg')
@@ -42,7 +43,8 @@ def setup_logging():
     splunk.setupSplunkLogger(logger, LOGGING_DEFAULT_CONFIG_FILE, LOGGING_LOCAL_CONFIG_FILE, LOGGING_STANZA_NAME)
     return logger
 
-logger = setup_logging()
+
+setup_logging()
 
 
 @Configuration()
@@ -166,7 +168,6 @@ class KafkaPublishCommand(StreamingCommand):
             self.service.indexes[self.error_index_name].upload(tmp.name)
 
     def stream(self, records):
-        logger.info(f"Started KafkaPublishCommand stream()")
         if self.error_index_name is not None and self.error_index_name not in self.service.indexes:
             raise ValueError(f"Index {self.error_index_name} does not exist")
 
@@ -196,8 +197,7 @@ class KafkaPublishCommand(StreamingCommand):
             time_elapsed = time.time() - timestamp_send_start
             time_since_last_log = time.time() - last_log_time
             records_per_second = records_successfully_sent / time_elapsed
-            if time_since_last_log >= 2:
-                # Log every 5 seconds
+            if time_since_last_log >= LOG_PROGRESS_INTERVAL_SECONDS:
                 self.logger.info(
                     f"Progress: metadata={record_metadata}, {records_successfully_sent} records sent in {time_elapsed:.3f} seconds.")
                 self.logger.info(f"Current performance: {records_per_second:.3f} records/second")
