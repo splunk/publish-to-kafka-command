@@ -44,6 +44,9 @@ def setup_logging():
     return logger
 
 
+setup_logging()
+
+
 @Configuration()
 class KafkaPublishCommand(StreamingCommand):
     env_name = Option(
