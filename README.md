@@ -1,4 +1,4 @@
-# alert-action-kafka-publisher
+# publish-to-kafka-command
 https://splunk.atlassian.net/browse/FDSE-2006 - Publish Splunk events to Kafka via custom streaming command
 
 ## Custom Search Command
