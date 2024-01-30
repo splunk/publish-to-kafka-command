@@ -6,6 +6,7 @@ import logging.handlers
 import os
 import sys
 import time
+import hashlib
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "lib"))
 from splunklib.searchcommands import \
@@ -15,7 +16,7 @@ from solnlib import conf_manager
 import splunk
 
 from kafka import KafkaProducer
-from kafka.errors import NoBrokersAvailable
+from kafka.errors import KafkaTimeoutError, NoBrokersAvailable
 
 ADDON_NAME = "publish_to_kafka"
 LOG_PROGRESS_INTERVAL_SECONDS = 2
@@ -168,6 +169,7 @@ class KafkaPublishCommand(StreamingCommand):
             self.service.indexes[self.error_index_name].upload(tmp.name)
 
     def stream(self, records):
+        # Note that records is a generator
         if self.error_index_name is not None and self.error_index_name not in self.service.indexes:
             raise ValueError(f"Index {self.error_index_name} does not exist")
 
@@ -176,42 +178,60 @@ class KafkaPublishCommand(StreamingCommand):
         except NoBrokersAvailable as e:
             raise RuntimeError("Bootstrap servers may be unreachable or credentials may be incorrect.") from e
 
-        failed_records = []
+        # converting to list may cause memory issues for very long events
+        # Note that stream() receives up to 50,000 events
+        records_list = list(records)
+        record_indexes_received = set()
 
         def make_error_handler(failed_record):
             def handler(error):
-                self.logger.error(f"Error sending record to Kafka: {error}")
-                self.logger.error(f"Record: {failed_record}")
-                failed_records.append(failed_record)
+                pass
+                # self.logger.error(f"Error sending record to Kafka: {error} -> {failed_record}")
 
             return handler
 
         timestamp_send_start = time.time()
         last_log_time = timestamp_send_start
-        records_successfully_sent = 0
 
-        def success_handler(record_metadata):
-            nonlocal records_successfully_sent
-            nonlocal last_log_time
-            records_successfully_sent += 1
-            time_elapsed = time.time() - timestamp_send_start
-            time_since_last_log = time.time() - last_log_time
-            records_per_second = records_successfully_sent / time_elapsed
-            if time_since_last_log >= LOG_PROGRESS_INTERVAL_SECONDS:
-                self.logger.info(
-                    f"Progress: metadata={record_metadata}, {records_successfully_sent} records sent in {time_elapsed:.3f} seconds.")
-                self.logger.info(f"Current performance: {records_per_second:.3f} records/second")
-                last_log_time = time.time()
+        def make_success_handler(record_index):
+            def success_handler(record_metadata):
+                nonlocal record_indexes_received
+                nonlocal last_log_time
 
-        for record in records:
-            producer.send(self.topic_name, record).add_errback(make_error_handler(record)).add_callback(success_handler)
+                record_indexes_received.add(record_index)
+                time_elapsed = time.time() - timestamp_send_start
+                time_since_last_log = time.time() - last_log_time
+                records_per_second = len(record_indexes_received) / time_elapsed
+                if time_since_last_log >= LOG_PROGRESS_INTERVAL_SECONDS:
+                    self.logger.info(
+                        f"Progress: metadata={record_metadata}, {len(record_indexes_received)} records sent in {time_elapsed:.3f} seconds.")
+                    self.logger.info(f"Current performance: {records_per_second:.3f} records/second")
+                    last_log_time = time.time()
+
+            return success_handler
+
+        for index, record in enumerate(records_list):
+            # self.logger.info(f"Record: {index} -> {record}")
+            producer.send(self.topic_name, record).add_errback(
+                make_error_handler(record)
+            ).add_callback(
+                make_success_handler(index)
+            )
             yield record
 
-        producer.flush(timeout=self.timeout)
+        try:
+            producer.flush(timeout=self.timeout)
+        except KafkaTimeoutError as e:
+            self.logger.error(f"Timeout Error: {e}")
+            num_failed = len(records_list) - len(record_indexes_received)
+            self.logger.info(f"records_received={len(record_indexes_received)}. records_failed={num_failed}")
+            self.write_error(f"{e}")
 
-        if failed_records and self.error_index_name is not None:
-            self.write_error(f"Failed to send {len(failed_records)} records to Kafka")
-            self.write_to_index(failed_records)
+        if self.error_index_name is not None:
+            failed_records = [record for index, record in enumerate(records_list) if index not in record_indexes_received]
+            if failed_records:
+                self.write_error(f"Failed to send {len(failed_records)} records to Kafka. Writing failed records to {self.error_index_name}")
+                self.write_to_index(failed_records)
 
 
 dispatch(KafkaPublishCommand, sys.argv, sys.stdin, sys.stdout, __name__)
