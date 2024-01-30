@@ -80,6 +80,13 @@ From within directory `/confluent`:
 
 `docker compose up --build`
 
+### Notes
+The example broker exposes two kafka listeners:
+  - PLAINTEXT: localhost:9092
+  - SASL PLAINTEXT: localhost:9094
+    - credential defined in `confluent/kafka_server_jaas.conf`
+
+
 ## Further Reading
 Streaming command can run on both SH and indexers:
 - https://docs.splunk.com/Documentation/Splunk/9.1.2/Search/Typesofcommands#Distributable_streaming
